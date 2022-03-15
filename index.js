@@ -2,12 +2,16 @@ const mysql = require("mysql2");
 const inquirer = require("inquirer");
 require("console.table");
 require('dotenv').config();
+//requring mysql2 for database, inquierer for user interface, console.table for tables, and dotenv for security.
 
 const connection = mysql.createConnection({
+  //creating a connection to local host
     host: 'localhost',
 
+    //defining port 3306
     port: 3306,
 
+    //using .env file to hide user, password, and database name.
     user: process.env.DB_USER,
 
     password: process.env.DB_PASSWORD,
@@ -20,8 +24,10 @@ connection.connect(function (err) {
     init();
 });
 
+//initial function prompting user for input.
 function init() {
 
+  //inquiring what the user would like to do using prompts.
   inquirer
     .prompt({
       type: "list",
@@ -37,6 +43,7 @@ function init() {
         "Update Employee Role",
         "Exit"]
     })
+    //switch statement allows program to split depending what option is chosen.
     .then(function ({ task }) {
       switch (task) {
         case "View Employees":
@@ -74,15 +81,18 @@ function init() {
     });
 }
 
+//if the user views departments.
 function viewDepartments() {
     console.log("Viewing Departments\n");
-  
+
+    //using the ID and Name from the Departments.
     var query =
       `SELECT ID, NAME FROM DEPARTMENT`
   
     connection.query(query, function (err, res) {
       if (err) throw err;
-  
+      
+      //console.table is used to display information.
       console.table(res);
       console.log("Here are the Departments\n");
   
@@ -91,9 +101,10 @@ function viewDepartments() {
   
 }
 
+//if user chooses to view roles
 function viewRoles() {
     console.log("Viewing Roles\n");
-  
+    //ID, Title, Salary, and Department ID are selected to be viewed.
     var query =
       `SELECT ID, TITLE, SALARY, DEPARTMENT_ID FROM ROLE`
   
@@ -108,6 +119,7 @@ function viewRoles() {
   
 }
 
+//function for user choosing to view employee
 function viewEmployee() {
   console.log("Viewing employees\n");
 
@@ -132,6 +144,7 @@ function viewEmployee() {
 
 }
 
+//function if user chooses to add a department.
 function addDepartment() {
 
     var query1 =
@@ -142,6 +155,7 @@ function addDepartment() {
         console.table(res);
     });
 
+    //prompting user to input the name of the new department.
     inquirer
     .prompt([
       {
@@ -169,6 +183,7 @@ function addDepartment() {
     });
   }
   
+//if user chooses to add a new role.
 function addRole() {
 
     var query1 =
@@ -180,6 +195,8 @@ function addRole() {
       console.table(res);
     });
 
+
+    //user is prompted to input the new title, salary and department of the new role.
     inquirer
       .prompt([
         {
@@ -199,7 +216,8 @@ function addRole() {
         },
       ])
       .then(function (answer) {
-  
+        
+        //the new query is inserted into the existing db.
         var query = `INSERT INTO role SET ?`
         console.log(answer)
   
@@ -220,7 +238,7 @@ function addRole() {
       });
   }
 
-
+//function if the user chooses to add an employee.
 function addEmployee() {
   console.log("Add an Employee")
 
@@ -233,6 +251,7 @@ function addEmployee() {
     console.table(res);
   });
 
+  //the user is prompted to add in the first, last name, role, and their manager.
   inquirer
     .prompt([
       {
@@ -259,6 +278,7 @@ function addEmployee() {
     .then(function (answer) {
       console.log(answer);
 
+      //the user's answers are then imput into the existing employee table in the db.
       var query2 = `INSERT INTO employee SET ?`
       connection.query(query2,
         {
@@ -278,9 +298,10 @@ function addEmployee() {
     });
 }
 
-
+//function to update an existing employee's role.
 function updateEmpRole() {
 
+  //existing employees are shown for convenience.
   var query =
     `SELECT first_name, last_name, role_id, manager_id FROM EMPLOYEE`
 
@@ -290,6 +311,7 @@ function updateEmpRole() {
     console.table(res);
 
 
+    //user is prompted to chose by employee id and role id, whom they'd like adjust.
     inquirer
     .prompt([
       {
@@ -305,6 +327,7 @@ function updateEmpRole() {
     ])
     .then(function (answer) {
 
+      //user's input is then logged into the query and the table is adjusted.
       var query = `UPDATE employee SET role_id = ? WHERE id = ?`
       connection.query(query,
         [ answer.role,  
